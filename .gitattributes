@@ -1,2 +1,158 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
+
+public class CGPACalculator extends JFrame {
+    private JLabel currentCGPALabel, creditLabel, gradeLabel, courseAddedLabel, currentCompletedCreditLabel;
+    private JTextField currentCGPAField, currentCompletedCreditField;
+    private JComboBox<Double> creditComboBox;
+    private JComboBox<String> gradeComboBox;
+    private JButton addCourseButton, calculateButton, clearButton;
+    private JTextArea resultArea;
+
+    private int totalCourses = 0;
+    private double totalCredit = 0;
+    private double totalGradePoints = 0;
+    private double currentCGPA = 0;
+    private double currentCompletedCredit = 0;
+    private String coursesAdded = "";
+
+    public CGPACalculator() {
+        setTitle("CGPA Calculator");
+        setSize(850, 550);
+        setResizable(false);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLayout(new FlowLayout());
+
+        currentCGPALabel = new JLabel("Current CGPA:");
+        add(currentCGPALabel);
+
+        currentCGPAField = new JTextField(10);
+        add(currentCGPAField);
+
+        currentCompletedCreditLabel = new JLabel("Current Credit:");
+        add(currentCompletedCreditLabel);
+
+        currentCompletedCreditField = new JTextField(10);
+        add(currentCompletedCreditField);
+
+        creditLabel = new JLabel("Select course Credit :");
+        add(creditLabel);
+
+        Double[] credits = {0.0, 1.0, 2.0, 3.0, 4.0, 4.5};
+        creditComboBox = new JComboBox<>(credits);
+        add(creditComboBox);
+
+        gradeLabel = new JLabel("Select Grade:");
+        add(gradeLabel);
+
+        String[] grades = {"A+", "A", "A-", "B+", "B", "B-", "C+", "C", "D", "F"};
+        gradeComboBox = new JComboBox<>(grades);
+        add(gradeComboBox);
+
+        addCourseButton = new JButton("Add Course");
+        add(addCourseButton);
+
+        calculateButton = new JButton("Calculate CGPA");
+        add(calculateButton);
+
+        clearButton = new JButton("Clear");
+        add(clearButton);
+
+        resultArea = new JTextArea(15, 50);
+        resultArea.setEditable(false);
+        add(resultArea);
+
+        courseAddedLabel = new JLabel("");
+        courseAddedLabel.setBounds(300, 300, 500, 300);
+        add(courseAddedLabel);
+
+        addCourseButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                double credit = (double) creditComboBox.getSelectedItem();
+                String grade = (String) gradeComboBox.getSelectedItem();
+                double gradePoint = calculateGradePoint(grade);
+
+                totalCredit += credit;
+                totalGradePoints += (credit * gradePoint);
+                totalCourses++;
+
+                coursesAdded += credit + " Credits & Grade\t " + grade + " , \n";
+                courseAddedLabel.setText("Courses Added: \n" + coursesAdded);
+
+                creditComboBox.setSelectedIndex(0);
+                gradeComboBox.setSelectedIndex(0);
+
+                JOptionPane.showMessageDialog(null, "Course is added.");
+            }
+        });
+
+        clearButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                totalCourses = 0;
+                totalCredit = 0;
+                totalGradePoints = 0;
+                currentCGPA = 0;
+                currentCompletedCredit = 0;
+                coursesAdded = "";
+                courseAddedLabel.setText("");
+                resultArea.setText("");
+                currentCGPAField.setText("");
+                currentCompletedCreditField.setText("");
+            }
+        });
+
+        calculateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (totalCourses > 0) {
+                    double termCGPA = totalGradePoints / totalCredit;
+                    currentCGPA = Double.parseDouble(currentCGPAField.getText());
+                    currentCompletedCredit = Double.parseDouble(currentCompletedCreditField.getText());
+                    double overallCGPA = ((termCGPA * totalCredit) + (currentCGPA * currentCompletedCredit)) / (currentCompletedCredit + totalCredit);
+
+                    DecimalFormat df = new DecimalFormat("#.##");
+                    resultArea.setText("Term CGPA: " + df.format(termCGPA) + "\n"
+                            + "Overall CGPA: " + df.format(overallCGPA) + "\n"
+                            + "Your total completed credit: " + (currentCompletedCredit + totalCredit));
+                } else {
+                    resultArea.setText("No courses added.");
+                }
+            }
+        });
+    }
+
+    private double calculateGradePoint(String grade) {
+        switch (grade) {
+            case "A+":
+                return 4.00;
+            case "A":
+                return 3.75;
+            case "A-":
+                return 3.50;
+            case "B+":
+                return 3.25;
+            case "B":
+                return 3.00;
+            case "B-":
+                return 2.75;
+            case "C+":
+                return 2.50;
+            case "C":
+                return 2.25;
+            case "D":
+                return 2.00;
+            default:
+                return 0.00;
+        }
+    }
+
+    public static void main(String[] args) {
+        new CGPACalculator().setVisible(true);
+    }
+}
